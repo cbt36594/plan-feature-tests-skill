@@ -21,7 +21,7 @@ Turn feature requirements into a traceable, executable QA plan. Use a bounded co
 
 - Read `references/test-plan-template.md` before creating a plan or report.
 - Read `references/spec-completeness-checklist.md` when UI, API, state, interaction, accessibility, or design requirements are in scope.
-- Run `scripts/validate_test_plan.py` for every saved Markdown plan or report before handoff.
+- Resolve `scripts/validate_test_plan.py` from this skill's directory and run it with `python3` for every saved Markdown plan or report before handoff.
 
 ## Inspect Project Context
 
@@ -135,8 +135,8 @@ Map requirements and cases in both directions: every in-scope requirement must m
 
 ## Validate Before Handoff
 
-1. Run `scripts/validate_test_plan.py <plan> --kind plan --require-not-run` for a fresh plan.
-2. Run `scripts/validate_test_plan.py <report> --kind report --plan <plan>` for an execution report.
+1. Run `python3 scripts/validate_test_plan.py <plan> --kind plan --require-not-run` from this skill's directory for a fresh plan.
+2. Run `python3 scripts/validate_test_plan.py <report> --kind report --plan <plan>` from this skill's directory for an execution report.
 3. Run the narrowest build or syntax checks for added test support within the resource gates.
 4. Verify no temporary artifacts, secrets, stale evidence links, duplicate IDs, unmapped requirements, orphan support/cleanup references, unrelated changes, or unaccounted frozen cases remain.
 5. Keep unresolved requirements in `Needs Confirmation`; never convert them into assumed PASS criteria.
