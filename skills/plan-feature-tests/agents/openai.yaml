@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Feature Tests"
+  short_description: "Plan and run bounded traceable feature QA"
+  default_prompt: "Use $plan-feature-tests to create a resource-bounded, traceable feature QA plan with a two-to-three-round completeness loop before execution."
