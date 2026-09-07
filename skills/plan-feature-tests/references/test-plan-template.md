@@ -98,7 +98,8 @@ Resolve requirement ambiguity before executing affected cases. Record confirmed 
 
 | 類型 | 基準 / 來源 | 門檻 | 觸發動作 |
 |---|---|---|---|
-| 週用量 | 可讀 rate-limit telemetry；否則 Unavailable | 每下降 5 個百分點 | 停止下一大型階段，回報進度並詢問是否繼續；不得用估算冒充 |
+| 週用量 | 宿主可讀的週額度百分比、供應商、時間與重設窗口；否則 Unavailable | 每下降 5 個百分點 | 停止下一大型階段，回報進度並詢問是否繼續；不得用估算冒充 |
+| 宿主能力 | 檔案、Python 3、Git／版本來源、程序監控與安全中斷、裝置／瀏覽器；各列 Available / Unavailable / Not Required | 依案例所需能力 | 缺少能力先解決受影響範圍；驗證器未執行標記 VALIDATION_NOT_RUN |
 | Build | command、target、開始與最後進度時間 | 2 分鐘無進度提醒；5 分鐘停止 | 安全中斷並詢問是否延長；已知長 build 先取得授權 |
 | 重試 | 相同 build/test/device flow | 最多 2 次 | 第 3 次前詢問；不穩定結果記 FAIL/flaky |
 | 讀取 | 每輪新讀檔案 | 超過 20 個新檔 | 擴大前說明範圍與成本 |
@@ -109,7 +110,7 @@ Resolve requirement ambiguity before executing affected cases. Record confirmed 
 
 | # | 類型 | 控制方式 |
 |---|---|---|
-| 1 | Completeness loop | Round 1 建 ledger；Round 2/3 只讀 fingerprint delta 與未解缺口 |
+| 1 | Completeness loop | Round 1 建 ledger；Round 2/3 聚焦 fingerprint delta、未解缺口與尚未檢查的相關呼叫路徑；遵守讀檔門檻 |
 | 2 | Build / Unit test | 指定 module、variant、class 或 method；先讀 summary / failure snippet |
 | 3 | Instrumentation | 指定 test class / method；先讀 structured result |
 | 4 | Runtime log | 只抓 package、tag、keyword 或 request ID；遮罩 secrets / PII |
@@ -171,6 +172,12 @@ Resolve requirement ambiguity before executing affected cases. Record confirmed 
 ```
 
 ## Template Rules
+
+- Resolve resources relative to the Skill root and invoke the resolved validator path with Python 3. Keep this directory's references and scripts available together.
+- Preserve exact headings, column names, IDs, and status tokens; localize only narrative content.
+- Record applicable host capabilities and concrete limitations. If validation cannot run, label the artifact `VALIDATION_NOT_RUN`, explain why, and supply the command for a capable host. Do not claim validated handoff or execute from an unvalidated plan.
+- Weekly telemetry is host-dependent. Other quota windows and task token budgets require separate labels and agreed gates; `/status` and `/usage` are examples only. Unavailable weekly telemetry does not by itself block work under other gates.
+- Launch builds only when progress monitoring and safe deadline enforcement are available; otherwise resolve the execution arrangement first.
 
 - Run two or three completeness rounds. Never add a fourth round without explicit user approval.
 - Freeze a plan only when the last round is `READY_TO_FREEZE`, adds zero requirements and cases, and has zero unresolved gaps.

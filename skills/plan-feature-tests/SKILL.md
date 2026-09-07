@@ -1,6 +1,6 @@
 ---
 name: plan-feature-tests
-description: Create, review, or execute resource-bounded, traceable feature QA plans and reports from specs, acceptance criteria, screenshots, API contracts, implementation diffs, or existing checklists. Use when Codex is asked to help test a feature, review test completeness, run an approved plan, resume partial QA, or report PASS/FAIL/BLOCKED results with safe mocks, cleanup, usage warnings, and build-time limits.
+description: Create, review, or execute resource-bounded, traceable feature QA plans and reports from specs, acceptance criteria, screenshots, API contracts, implementation diffs, or existing checklists. Use when an AI coding agent is asked to help test a feature, review test completeness, run an approved plan, resume partial QA, or report PASS/FAIL/BLOCKED results with safe mocks, cleanup, usage warnings, and build-time limits.
 ---
 
 # Plan Feature Tests
@@ -8,6 +8,16 @@ description: Create, review, or execute resource-bounded, traceable feature QA p
 ## Purpose
 
 Turn feature requirements into a traceable, executable QA plan. Use a bounded completeness loop before execution, stop for material resource gates, and produce a concise report that accounts for every frozen test ID.
+
+## Host Capabilities and Portability
+
+- The core workflow is model-neutral. Skill discovery, invocation syntax, tool names, and permissions belong to the host. `agents/openai.yaml` is optional Codex UI metadata; other hosts do not need it or the `$plan-feature-tests` invocation syntax.
+- Resolve `references/` and `scripts/` relative to the directory containing this `SKILL.md`, not the project working directory. Transfer the complete skill directory. Use the resolved absolute script path and an available Python 3 interpreter for validation; quote paths containing spaces.
+- Before planning or execution, record applicable capabilities as Available, Unavailable, or Not Required: source/file access, artifact writing, Python 3, Git or another source-version mechanism, command monitoring and safe interruption, device/browser access, and readable usage telemetry. Record the actual tool or limitation in `資源預算與門檻` or the report premises.
+- With supplied source text but no workspace access, continue only the planning/review that the supplied evidence supports. Do not claim to have inspected inaccessible code, calculated unavailable fingerprints, or executed commands. Request missing sources for affected scope. Without Git, use supplied versions or content hashes and disclose the unavailable branch/dirty-tree baseline.
+- If Python, required resources, or file access is unavailable, label the artifact `VALIDATION_NOT_RUN`, explain the missing capability, and provide the validation command for a capable host. Do not claim validated handoff or execute from an unvalidated plan. This artifact-level label does not replace test-case statuses or imply that requirements are resolved.
+- Before launching a build, ensure the host can monitor progress and enforce the approved deadline safely. Otherwise leave affected cases `NOT_RUN` and resolve the execution arrangement with the user; do not launch an unmonitorable build. Missing runtime/device capability cannot be replaced by static PASS evidence.
+- Preserve exact template headings, column names, IDs, and status tokens required by the validator. Narrative may follow the user's language; do not translate or rename the schema.
 
 ## Select the Mode
 
@@ -21,7 +31,7 @@ Turn feature requirements into a traceable, executable QA plan. Use a bounded co
 
 - Read `references/test-plan-template.md` before creating a plan or report.
 - Read `references/spec-completeness-checklist.md` when UI, API, state, interaction, accessibility, or design requirements are in scope.
-- Resolve `scripts/validate_test_plan.py` from this skill's directory and run it with `python3` for every saved Markdown plan or report before handoff.
+- Run `scripts/validate_test_plan.py` for every saved Markdown plan or report before validated handoff; follow the capability fallback above when it cannot run.
 
 ## Inspect Project Context
 
@@ -46,7 +56,7 @@ Run at least two rounds and at most three rounds for every new or materially cha
 
 1. `Round 1 — Spec-first`: build the requirement, exclusion, screen/state, API, code-path, test-support, evidence, and cleanup inventories; generate the first case set.
 2. `Round 2 — Code/Failure-first`: independently inspect implementation entry points, callers, callbacks, lifecycle, cancellation, retries, concurrency, boundaries, security, regressions, and hidden flows. Compare those findings with the first case set.
-3. If Round 2 adds no requirement, case, or unresolved gap, finish as `READY_TO_FREEZE`.
+3. Finish Round 2 as `READY_TO_FREEZE` only when it adds zero requirements and zero cases and the total unresolved gap count is zero.
 4. If Round 2 changes the plan, repair it and run `Round 3 — Delta audit` against only the changed sources, new requirements, new cases, and unresolved gaps.
 5. Finish Round 3 as `READY_TO_FREEZE` only when it adds no new requirement or case and has zero unresolved gaps.
 6. If Round 3 still finds new scope, stop as `LOOP_LIMIT_REACHED`. If requirements remain ambiguous, stop as `NEEDS_CONFIRMATION`. If source versions keep changing, stop as `SCOPE_UNSTABLE`.
@@ -54,7 +64,7 @@ Run at least two rounds and at most three rounds for every new or materially cha
 
 Record every round in `Completeness Loop` with the source fingerprint, review perspective, new requirement count, new case count, unresolved gap count, and result. Freeze the exact source fingerprint, plan version, and test-ID set only after `READY_TO_FREEZE`.
 
-Read the full source only in Round 1. In later rounds, verify fingerprints and read only deltas and unresolved areas. After context compaction, reload the source ledger, loop record, frozen case set, and open gaps instead of rebuilding the whole plan from memory.
+Read the full source only in Round 1. In later rounds, verify fingerprints and focus reads on deltas, unresolved areas, and relevant entry points or call paths not yet inspected, within the file-read gate. Do not reread unchanged sources already covered. The independent review perspective does not require a separate agent. After context compaction, reload the source ledger, loop record, frozen case set, and open gaps instead of rebuilding the whole plan from memory.
 
 If execution discovers a new path, requirement, or source change, pause the affected scope and return to `REVIEW`. Update the plan, rerun the bounded loop, obtain confirmation for any material scope or support change, then `RESUME`.
 
@@ -64,11 +74,11 @@ Record the gates in `資源預算與門檻` before execution.
 
 ### Usage gate
 
-- Record the starting weekly remaining percentage and timestamp only when the active agent surface exposes readable rate-limit telemetry.
+- Record the starting weekly remaining percentage and timestamp only when the active host exposes readable telemetry for that weekly usage window. Record the provider, window, and reset time when available; do not compare different providers or quota windows.
 - Stop before the next large stage whenever weekly remaining usage drops by another 5 percentage points from the recorded baseline or last confirmed checkpoint. Report completed work, remaining scope, the next stage, and ask whether to continue.
 - If one stage crosses multiple 5-point thresholds, report all crossed thresholds but request one decision at the current checkpoint.
 - Reset the baseline when the usage window resets.
-- If telemetry is unavailable, record `Unavailable`, tell the user exact weekly 5-point tracking is not possible, and never substitute context usage, tool output, elapsed time, or an estimate as weekly usage. Use user-provided `/status` or `/usage` snapshots, or an explicit task token budget, when supplied.
+- If telemetry is unavailable, record `Unavailable`, tell the user exact weekly 5-point tracking is not possible, and never substitute context usage, tool output, elapsed time, or an estimate as weekly usage. Use user-provided usage snapshots when supplied (`/status` or `/usage` are host-specific examples, not portable commands). A daily/session quota or explicit task token budget may be tracked separately with its own agreed gate; it must not be presented as weekly usage. Unavailable weekly telemetry alone does not block work under the other resource gates.
 
 ### Local command gates
 
@@ -135,8 +145,10 @@ Map requirements and cases in both directions: every in-scope requirement must m
 
 ## Validate Before Handoff
 
-1. Run `python3 scripts/validate_test_plan.py <plan> --kind plan --require-not-run` from this skill's directory for a fresh plan.
-2. Run `python3 scripts/validate_test_plan.py <report> --kind report --plan <plan>` from this skill's directory for an execution report.
+Resolve the script path from the Skill root and invoke it with Python 3 for both commands below. If unavailable, apply `VALIDATION_NOT_RUN` as defined above.
+
+1. Run `python3 "<skill-root>/scripts/validate_test_plan.py" <plan> --kind plan --require-not-run` for a fresh plan.
+2. Run `python3 "<skill-root>/scripts/validate_test_plan.py" <report> --kind report --plan <plan>` for an execution report.
 3. Run the narrowest build or syntax checks for added test support within the resource gates.
 4. Verify no temporary artifacts, secrets, stale evidence links, duplicate IDs, unmapped requirements, orphan support/cleanup references, unrelated changes, or unaccounted frozen cases remain.
 5. Keep unresolved requirements in `Needs Confirmation`; never convert them into assumed PASS criteria.

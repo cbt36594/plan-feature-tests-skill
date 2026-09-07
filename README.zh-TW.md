@@ -6,6 +6,10 @@
 
 這份 Skill 遵循開放的 Agent Skills 目錄格式，可供 Codex、Cursor、Claude Code 與 Gemini CLI 使用。
 
+## 宿主能力
+
+核心流程不依賴特定模型；完整執行需要宿主提供相關檔案、Python 3、程序控制與裝置／瀏覽器工具。請移轉完整 Skill 資料夾；`agents/openai.yaml` 為選用的 Codex 設定。使用 Grok 的 Agent 必須由宿主載入指令並提供工具，僅貼上提示詞不會取得本機專案存取能力。無法讀取週額度時記錄 `Unavailable`，其他預算分開追蹤。無法執行驗證器時，成果須標記 `VALIDATION_NOT_RUN`，不得宣稱已通過驗證或據此執行測試。
+
 ## 內容結構
 
 ```text

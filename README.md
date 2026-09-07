@@ -6,6 +6,10 @@
 
 The skill follows the open Agent Skills directory format and can be used with Codex, Cursor, Claude Code, and Gemini CLI.
 
+## Host capabilities
+
+The core workflow is model-neutral; full execution requires the host to provide the relevant file, Python 3, process-control, and device/browser tools. Transfer the complete skill directory. `agents/openai.yaml` is optional Codex metadata. For Grok-backed agents, the host must load the instructions and expose the required tools; reading the prompt alone does not provide local repository access. Missing weekly telemetry is recorded as `Unavailable`; other budgets remain separate. If the validator cannot run, the artifact is labeled `VALIDATION_NOT_RUN` and must not be presented as validated or used for execution.
+
 ## Contents
 
 ```text
