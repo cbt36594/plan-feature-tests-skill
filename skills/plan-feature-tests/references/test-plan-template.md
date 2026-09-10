@@ -142,6 +142,34 @@ Resolve requirement ambiguity before executing affected cases. Record confirmed 
 | T002 | {{what was tested}} | ❌ FAIL | {{one-sentence cause}} | {{fix or retest}} |
 | T003 | {{what was tested}} | ⚠️ BLOCKED | {{remaining execution barrier}} | {{unblock action}} |
 
+## 實際測試參數
+
+| 案例 ID | 參數 / 設定 | 實際值 | 來源 / 與計畫差異 |
+|---|---|---|---|
+| T001 | {{artifact, environment, initial state, fixture, command arguments, timeout/retry limits}} | {{actual value; N/A or NOT_CAPTURED with reason where necessary}} | {{runtime/config source and any drift}} |
+
+## 完整測試流程
+
+| 步驟 | 時間 / 時區 | 案例 ID | 實際操作 / 指令 / UI 選擇器 | 輸入參數 | 觀察結果 | 證據 |
+|---|---|---|---|---|---|---|
+| 1 | {{captured timestamp, or not recorded}} | T001 | {{actual setup/build/install/navigation/trigger/wait/retry/assertion/cleanup action}} | {{actual input}} | {{observed outcome, including failed attempts}} | {{valid attachment or log reference}} |
+
+## Request / Response（不適用時標示 N/A）
+
+| 案例 ID / Correlation | 擷取位置 | Method / 完整 Endpoint | Headers | 實際 Request Body | HTTP 狀態 | 實際 Response Body | 業務判定 |
+|---|---|---|---|---|---|---|---|
+| {{case and request ID}} | {{application/interceptor/network/server}} | {{observed method and URL}} | {{full captured headers or attachment}} | {{full body or attachment}} | {{observed status}} | {{full body or attachment}} | {{business code/message; separate from transport}} |
+
+涉及加密或轉換時，分別附上實際序列化明文、送出 body 與解密後 response。保留原始欄位名稱及型別；預期結構或混淆對照另列，不改寫實際證據。
+
+## 測試 Log
+
+| 案例 ID | 擷取指令 / 篩選範圍 | 時間窗 / 時區 | 完整 Log 路徑 | 關鍵事件與行號 | 擷取限制 |
+|---|---|---|---|---|---|
+| {{case}} | {{process/tag/request filter}} | {{start/end}} | {{retained local attachment}} | {{failure, recovery, dispatch, response}} | {{none, truncation, automatic masking, or NOT_CAPTURED reason}} |
+
+附上可讀的關鍵 log 原文；長篇內容以完整附件提供。標示證據可見性與保留方式，以及任何未擷取或被工具自動遮罩的值。流程摘要與原始 log 必須明確區別。
+
 ## 資源門檻事件（觸發時加入）
 
 | # | 類型 | 門檻 | 當下狀態 | 使用者決定 |
@@ -188,4 +216,6 @@ Resolve requirement ambiguity before executing affected cases. Record confirmed 
 - Treat intermittent behavior as FAIL and describe it as flaky.
 - Do not mark runtime behavior PASS with static evidence.
 - Resolve product ambiguity before execution; do not hide it as BLOCKED.
-- Keep evidence minimal, redacted, and valid after cleanup. Restore repository, device, account, network, and backend state to the recorded baseline.
+- Keep evidence task-scoped and valid after cleanup. Honor the user's authorized visibility and retention requirements; requested reports and logs are deliverables, not disposable temporary files. State any masking or capture limits explicitly.
+- Include actual parameters, the full ordered procedure, and applicable request/response and log evidence. Mark unavailable evidence NOT_CAPTURED rather than inventing values; N/A requires an applicability reason.
+- Distinguish HTTP transport, business response, UI, and persistence. A business rejection is FAIL even with HTTP 200. Restore repository, device, account, network, and backend state to the approved baseline and identify any remaining cleanup barrier.

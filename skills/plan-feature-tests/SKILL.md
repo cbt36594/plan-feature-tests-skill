@@ -87,9 +87,9 @@ Record the gates in `資源預算與門檻` before execution.
 - If a build is known to require more than five minutes, obtain a longer allowance before starting it. Each approved extension creates a new explicit deadline.
 - Attempt the same build, test, device flow, or unchanged failing command at most twice. Ask before a third attempt. Treat inconsistent behavior after controlled reruns as `❌ FAIL` and label it flaky.
 - Ask before expanding to more than 20 newly read files. Cap a single tool result at about 8,000 output tokens and switch to summaries, focused ranges, or failure snippets.
-- During runtime/device execution, checkpoint after 10 cases or 15 minutes, whichever comes first. Keep raw logs out of the conversation and report only filtered evidence.
+- During runtime/device execution, checkpoint after 10 cases or 15 minutes, whichever comes first. Capture logs scoped to the tested process, request, tag, and time window. Keep progress messages concise; retain the detailed evidence in the report or linked local attachments.
 
-Waiting for a build does not justify streaming its full log. Poll at concise intervals, preserve no more evidence than needed, and remove temporary raw output during cleanup.
+Waiting for a build does not justify streaming its full log. Poll at concise intervals. Distinguish disposable intermediate output from requested evidence: retain requested logs and reports through cleanup, with valid links.
 
 ## Use the Pre-Test Confirmation Gate
 
@@ -130,7 +130,7 @@ Map requirements and cases in both directions: every in-scope requirement must m
 3. Add confirmed support only after the confirmation gate and record it in the cleanup ledger immediately.
 4. Use runtime screenshots or device/browser interaction when the required evidence level is `Runtime/Device`.
 5. Record each frozen case exactly once as `✅ PASS`, `❌ FAIL`, `⚠️ BLOCKED`, or `NOT_RUN`. Runtime, network, lifecycle, and state-transition behavior cannot pass from static inspection alone.
-6. Redact credentials, tokens, cookies, personal data, account identifiers, and secrets.
+6. Establish evidence visibility and retention from the user's instructions before capture. Default to redacting credentials and unrelated personal data. Honor explicit authorization for unmasked, task-scoped local evidence where permitted; do not invent a blanket ban on domain names, IPs, or request bodies. Document any omitted, truncated, or automatically redacted values and the capture-layer limitation. Do not silently substitute placeholders for requested actual values or broaden collection to unrelated traffic.
 7. Remove only current-run artifacts, restore device/network/login state, and compare the final state with the baseline.
 8. Update the report after cleanup so it does not reference deleted evidence.
 
@@ -140,8 +140,19 @@ Map requirements and cases in both directions: every in-scope requirement must m
 - Preserve every frozen test ID. Count underlying cases, not grouped display rows.
 - Use `通過率 = PASS / (PASS + FAIL)` and `N/A` when no case executed.
 - Use `執行覆蓋 = (PASS + FAIL) / total frozen in-scope cases`; report `BLOCKED` and `NOT_RUN` separately.
-- Include resource-gate events only when triggered. Keep raw logs, videos, and duplicate screenshots out of the body.
+- Include resource-gate events only when triggered. Keep the result summary short, followed by the detailed execution record below; use linked attachments for lengthy logs without replacing them with a success-only summary.
 - Add `清理結果` only when support, temporary files, packages, backend data, device settings, screenshots, or raw logs changed.
+
+### Required Execution Evidence
+
+Use the detailed sections in `references/test-plan-template.md` for every execution report. Mark inapplicable sections `N/A` and unavailable evidence `NOT_CAPTURED`, with a reason; never reconstruct missing runtime values as if observed.
+
+- **Test parameters:** record the actual build/commit, artifact version/hash, environment, device/browser, starting state, fixture or injected values, trigger, command arguments, timeout/retry limits, and applicable request parameters. Distinguish planned parameters from actual values and note drift.
+- **Complete procedure:** record ordered actions from setup and instrumentation through build/install, UI navigation or commands, waits/retries/errors, assertions, and cleanup. Associate steps with case IDs, timestamps/timezone when captured, concrete inputs/selectors, observed results, and evidence links. Label retrospective summaries as summaries, not verbatim tool logs.
+- **API evidence, when applicable:** preserve the actual method, endpoint, captured headers, complete request body, HTTP status, and response body. For encrypted or transformed requests, separately show serialized plaintext, transmitted body, and decoded response. State the capture point (application, interceptor, network, server) and any headers added later. Preserve actual field names and types even when wrong; put expected schema or decoded field mappings separately.
+- **Logs:** begin scoped capture before the trigger; retain the failure-to-recovery sequence, timestamps, correlation/request IDs, and relevant errors. Include readable excerpts plus a working link to the complete scoped log. Report truncation, missing periods, library masking, or absent data explicitly. A shortened console view must not be mistaken for complete retained evidence.
+- **Judgment:** evaluate transport, business response, UI state, and persistence separately. HTTP 2xx is not business success; inspect the response's error code/message and mark a rejected operation FAIL. If a later run exposes an earlier evidence gap, qualify the old conclusion without inventing the earlier response.
+- **Retention and cleanup:** preserve user-requested reports/logs as deliverables; remove temporary hooks and restore the approved artifact. Verify the installed artifact rather than claiming source cleanup proves device cleanup. Record outstanding restoration separately from the test outcome.
 
 ## Validate Before Handoff
 
@@ -150,5 +161,5 @@ Resolve the script path from the Skill root and invoke it with Python 3 for both
 1. Run `python3 "<skill-root>/scripts/validate_test_plan.py" <plan> --kind plan --require-not-run` for a fresh plan.
 2. Run `python3 "<skill-root>/scripts/validate_test_plan.py" <report> --kind report --plan <plan>` for an execution report.
 3. Run the narrowest build or syntax checks for added test support within the resource gates.
-4. Verify no temporary artifacts, secrets, stale evidence links, duplicate IDs, unmapped requirements, orphan support/cleanup references, unrelated changes, or unaccounted frozen cases remain.
+4. Verify no unapproved sensitive data, disposable temporary artifacts, stale evidence links, duplicate IDs, unmapped requirements, orphan support/cleanup references, unrelated changes, or unaccounted frozen cases remain. Check that actual parameters, the complete procedure, and applicable request/response and log evidence are present; preserve explicitly requested evidence under its agreed visibility and retention rules.
 5. Keep unresolved requirements in `Needs Confirmation`; never convert them into assumed PASS criteria.
